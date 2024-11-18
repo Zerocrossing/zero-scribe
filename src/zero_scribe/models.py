@@ -1,10 +1,11 @@
-from pydantic import BaseModel, Field
-from pathlib import Path
-import zipfile
 import os
-import requests
+import zipfile
+from pathlib import Path
 from typing import Any, List
+
+import requests
 import whisperx
+from pydantic import BaseModel, Field
 
 from zero_scribe.consts import WHISPER_BATCH_SIZE, WHISPER_DEVICE
 from zero_scribe.ml_models import load_whisper_model
@@ -21,8 +22,8 @@ class CraigAudioFile(BaseModel):
     path: Path = Field(
         ..., title="Path", description="The path to the Craig audio file"
     )
-    user_name: str = Field(
-        None,
+    user_name: str | None = Field(
+        default = None,
         title="User Name",
         description="The name of the user who recorded the audio",
     )
@@ -88,16 +89,6 @@ class CraigAudioData(BaseModel):
         # Delete the zip file
         os.remove(zip_path)
         return cls(base_path=output_dir)
-
-
-class GameTranscription(BaseModel):
-    """Game Transcription
-
-    Holds references to multiple transcriptions
-    Includes a class method to generate multiple transcriptions from a CraigUnzipped object
-
-    Includes an output method for generating a single merged transcription
-    """
 
 
 class TranscriptionSegment(BaseModel):
@@ -194,7 +185,7 @@ class MultiTranscript(BaseModel):
             last_speaker = segment.user_name
 
         # save to output path
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(full_transcript)
 
     @classmethod
